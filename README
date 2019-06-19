@@ -1,0 +1,96 @@
+Performs unit reconciliation as specified in Question #3 (BACK-END) - see Specification below
+
+The version of python used for this solution is 3.7.3
+
+Running the program
+-------------------
+Usage: python recon_main.py [file...]
+The input can be read from one or more files or from standard input
+1.  python recon_main.py recon.in
+    - output for recon.in -> recon.out file
+2.  python recon_main.py recon.in some.txt
+    - output for recon.in -> recon.out file
+    - output for some.txt -> some.txt.out file
+3.  cat recon.in | python recon_main.py  --or--  cat recon.in | python recon_main.py -
+    - output for recon.in -> sys.stdout
+4.  cat recon.in | python recon_main.py - some.txt
+    - output for recon.in -> sys.stdout
+    - output for some.txt -> some.txt.out file
+
+Source Files
+------------
+recon.py - Reconciliation class - maintains running balance of positions and provides the reconcile method to return all positions that fail unit reconciliation
+recon_reader.py - ReconiliationReader - reads input lines and returns Reconciliation object
+recon_writer.py - ReconciliationWriter - takes output from Reconciliation.reconcile and writes all positions that failed unit reconciliation to an output file 
+recon_main.py - main entry point for running unit reconciliation for 1 or more input files
+
+Unit Test Files
+---------------
+test_recon.py - unit tests for Reconciliation class
+test_recon_reader.py - unit tests for ReconciliationReader class
+test_recon_writer.py - unit tests for ReconciliationWriter class
+
+To run all unit tests from command line:
+python -m unittest discover
+
+Test Data Files
+---------------
+recon.in
+recon2.in
+
+
+
+Specification
+-------------
+********** Remainder of this document is copied from Coding Challange Document **********
+Question 3: BACK-END
+
+The Problem:
+Reconciliation is a term YCharts uses for a set of correctness and consistency measures applied to the data we receive and use in financial calculations.One of the most common reconciliation checks is called ’unit reconciliation’, which answers the question, "does the transaction history add up to the number of shares the bank says I have?". For example, if the bank said I had 100 shares of Apple at the end of yesterday, and I bought 20 shares of Apple today, then we expect the bank to report 120 shares at the end of today. This surprisingly isn't always the case! The bank may send incomplete data, we may be parsing it incorrectly, or there may be events like corporate actions or trade settlement lag that cause an inconsistency.
+
+The Input:
+recon.in has three sections:
+DO-POS describes the positions in the Recount at the end of Day 0. Each record is a space-separated pair of Symbol and Shares. For example "AAPL 10" means 10 shares of AAPL were held at the end of Day 0, and "Cash 122.16" means we had $122.16 in the account at the end of Day 0.
+D1 -TRN describes the transactions that occurred in the account on Day 1. Each record is space-separated collection of four items: Symbol, Transaction Code, Shares, and Total Value. For example, the record "AAPL BUY 10 6123.21 " means 10 shares of AAPL were bought for a total cost of $6123.21.
+D1 -POS describes the positions in the account at the end of Day 1, and has the same format as DO-POS.
+
+The Output:
+The objective is to write a program that produces recon.out. Each line should be a space-separated record indicating a position that fails unit reconciliation. For example, "AAPI 10" means that the reported shares of AAPL in D1 -POS is 10 higher than expected based on the transactions.
+
+FAQ:
+1.	Can you sell a stock you don't own already ?
+Yes, you can. In finance this is called a short sale. The goal here is to compare data difference simply, so it is acceptable to have a negative position.
+2.	Do I need to validate the data format?
+No, assume the data format in recon.in has no errors (WYSIWYG).
+
+Test Data:
+recon.in
+---------
+D0-POS
+AAPL 100
+GOOG 200
+SP500 175.75
+Cash 1000
+
+D1-TRN
+AAPL SELL 100 30000
+GOOG BUY 10 10000
+Cash DEPOSIT 0 1000
+Cash FEE 0 50
+GOOG DIVIDEND 0 50
+TD BUY 100 10000
+
+D1-POS
+GOOG 220
+SP500 175.75
+Cash 20000
+MSFT 10
+
+recon.out
+----------
+Cash 8000
+GOOG 10
+TD -100
+MSFT 10
+
+<end>
